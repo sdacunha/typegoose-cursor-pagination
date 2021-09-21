@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.json -d",
     "test": "ava",
     "lint": "tslint -c ./tslint.json './src/**/*.ts'",
+    "prepare": "tsc",
     "ci": "npm run lint && npm run test"
   },
   "repository": {
