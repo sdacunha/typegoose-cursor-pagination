@@ -1,39 +1,39 @@
-import { Model, DocumentQuery } from "mongoose";
+import { Model, Query } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
 
 /**
  * The pagination options that can be passed.
  */
 export interface IPaginateOptions {
-    limit?: number;
-    sortField?: string;
-    sortAscending?: Boolean;
-    next?: string;
-    previous?: string;
+  limit?: number;
+  sortField?: string;
+  sortAscending?: Boolean;
+  next?: string;
+  previous?: string;
 }
 
 /**
  * The result of the paginated find request
  */
 export interface IPaginateResult<T> {
-    hasNext?: boolean;
-    hasPrevious?: boolean;
-    next?: string;
-    previous?: string;
-    totalDocs: number;
-    docs: T[];
+  hasNext?: boolean;
+  hasPrevious?: boolean;
+  next?: string;
+  previous?: string;
+  totalDocs: number;
+  docs: T[];
 }
 
 /**
  * An extension of the mongoose Model which include the findPaged method.
  */
 export interface IPaginateModel<T> extends Model<DocumentType<T>, {}> {
-    findPaged(
-        options: IPaginateOptions,
-        query?: Object,
-        projection?: Object,
-        _populate?: (Object | string)[]
-    ): DocumentQuery<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
+  findPaged(
+    options: IPaginateOptions,
+    query?: Object,
+    projection?: Object,
+    _populate?: (Object | string)[]
+  ): Query<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
 }
 
 /**
