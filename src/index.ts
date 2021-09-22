@@ -92,7 +92,6 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
 
     const sort = { $sort: generateSort(options) };
     const query = { $match: generateCursorQuery(options) };
-
     const limit = { $limit: unlimited ? 0 : options.limit + 1 };
 
     // Request one extra result to check for a next/previous
