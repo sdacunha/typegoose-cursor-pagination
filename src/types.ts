@@ -1,4 +1,4 @@
-import { Model, Query } from "mongoose";
+import { Aggregate, Model, Query } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
 
 /**
@@ -36,7 +36,7 @@ export interface IPaginateModel<T> extends Model<DocumentType<T>, {}> {
   ): Query<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
   aggregatePaged(
     options: IPaginateOptions,
-    _pipeline?: any[],
+    _pipeline?: Aggregate<T>,
     _options?: Record<string, unknown>
   ): Query<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
 }

@@ -71,7 +71,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
    */
   async function aggregatePaged<T>(
     options: IPaginateOptions,
-    _pipeline?: any[],
+    _pipeline?: Aggregate<T>,
     _options?: Record<string, unknown>
   ): Promise<IPaginateResult<T>> {
     // Determine limit
@@ -90,26 +90,19 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
-    const sort = { $sort: generateSort(options) };
-    const query = { $match: generateCursorQuery(options) };
-
-    // Request one extra result to check for a next/previous
-    const limit = { $limit: unlimited ? 0 : options.limit + 1 };
-
-    const docs: T[] = await this.aggregate(
-      [sort, query, ..._pipeline, limit],
-      _options
-    ).exec();
+    const wrapperAggregate: Aggregate<T[]> = this.aggregate()
+      .sort(generateSort(options))
+      .match(generateCursorQuery(options))
+      .append(_pipeline)
+      .limit(unlimited ? 0 : options.limit + 1);
+    const docs: T[] = await wrapperAggregate.exec();
 
     if (pluginOptions && pluginOptions.dontReturnTotalDocs) {
       return prepareResponse<T>(docs, options);
     } else {
-      const aggregateCountPipeline = [
-        ..._pipeline,
-        {
-          $count: "totalDocs",
-        },
-      ];
+      const aggregateCountPipeline: Aggregate<T[]> = this.aggregate()
+        .append(_pipeline)
+        .count("totalDocs");
       const totalDocsAggregate: { totalDocs: number } = await this.aggregate(
         aggregateCountPipeline
       ).exec();
