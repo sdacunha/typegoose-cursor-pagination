@@ -92,9 +92,10 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
 
     const sort = { $sort: generateSort(options) };
     const query = { $match: generateCursorQuery(options) };
-    const limit = { $limit: unlimited ? 0 : options.limit + 1 };
 
     // Request one extra result to check for a next/previous
+    const limit = { $limit: unlimited ? 0 : options.limit + 1 };
+
     const docs: T[] = await this.aggregate(
       [sort, query, ..._pipeline, limit],
       _options
