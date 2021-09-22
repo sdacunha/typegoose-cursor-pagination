@@ -90,18 +90,26 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
-    const wrapperAggregate: Aggregate<T[]> = this.aggregate()
+    const wrapperAggregate: Aggregate<T[]> = this.aggregate();
+
+    console.log({
+      sort: generateSort(options),
+      match: generateCursorQuery(options),
+    });
+
+    wrapperAggregate
       .sort(generateSort(options))
       .match(generateCursorQuery(options))
-      .append(_pipeline)
+      .append(_pipeline.pipeline())
       .limit(unlimited ? 0 : options.limit + 1);
+
     const docs: T[] = await wrapperAggregate.exec();
 
     if (pluginOptions && pluginOptions.dontReturnTotalDocs) {
       return prepareResponse<T>(docs, options);
     } else {
       const aggregateCountPipeline: Aggregate<T[]> = this.aggregate()
-        .append(_pipeline)
+        .append(_pipeline.pipeline())
         .count("totalDocs");
       const totalDocsAggregate: { totalDocs: number } = await this.aggregate(
         aggregateCountPipeline
