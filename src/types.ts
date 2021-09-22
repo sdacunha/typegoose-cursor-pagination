@@ -28,17 +28,17 @@ export interface IPaginateResult<T> {
  * An extension of the mongoose Model which include the findPaged method.
  */
 export interface IPaginateModel<T> extends Model<DocumentType<T>, {}> {
-  findPaged(
+  findPaged<R = T>(
     options: IPaginateOptions,
     query?: Object,
     projection?: Object,
     _populate?: (Object | string)[]
-  ): Query<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
-  aggregatePaged(
+  ): Query<IPaginateResult<DocumentType<R>>, DocumentType<R>>;
+  aggregatePaged<R = T>(
     options: IPaginateOptions,
-    _pipeline?: Aggregate<T>,
+    _pipeline?: Aggregate<R>,
     _options?: Record<string, unknown>
-  ): Query<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
+  ): Query<IPaginateResult<DocumentType<R>>, DocumentType<R>>;
 }
 
 /**
