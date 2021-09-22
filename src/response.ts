@@ -8,33 +8,42 @@ import R from "ramda";
  * @param options The pagination options
  * @param totalDocs The total amount of documents (without limit)
  */
-export function prepareResponse<T>(_docs: T[], options: IPaginateOptions, totalDocs?: number) {
-    // Check if there is a next/previous page
-    const hasMore = options.limit && _docs.length > options.limit;
-    if (hasMore) {
-        _docs.pop(); // Remove extra doc used to check for a next/previous page
-    }
+export function prepareResponse<T>(
+  _docs: T[],
+  options: IPaginateOptions,
+  totalDocs?: number
+) {
+  // Check if there is a next/previous page
+  const hasMore = options.limit && _docs.length > options.limit;
+  if (hasMore) {
+    _docs.pop(); // Remove extra doc used to check for a next/previous page
+  }
 
-    // Reverse docs in case of previous page
-    const docs = options.previous ? _docs.reverse() : _docs;
+  // Reverse docs in case of previous page
+  const docs = options.previous ? _docs.reverse() : _docs;
 
-    // Next/previous page data
-    const hasPrevious = options.next || (options.previous && hasMore) ? true : false;
-    const hasNext = options.previous || hasMore ? true : false;
-    const next = hasNext ? prepareCursor(docs[docs.length - 1], options.sortField) : undefined;
-    const previous = hasPrevious ? prepareCursor(docs[0], options.sortField) : undefined;
+  // Next/previous page data
+  const hasPrevious =
+    options.next || (options.previous && hasMore) ? true : false;
+  const hasNext = options.previous || hasMore ? true : false;
+  const next = hasNext
+    ? prepareCursor(docs[docs.length - 1], options.sortField)
+    : undefined;
+  const previous = hasPrevious
+    ? prepareCursor(docs[0], options.sortField)
+    : undefined;
 
-    // Build result
-    const result: IPaginateResult<T> = {
-        docs,
-        hasPrevious,
-        hasNext,
-        next,
-        previous,
-        ...(totalDocs !== undefined && { totalDocs })
-    };
+  // Build result
+  const result: IPaginateResult<T> = {
+    docs,
+    hasPrevious,
+    hasNext,
+    next,
+    previous,
+    ...(totalDocs !== undefined && { totalDocs }),
+  };
 
-    return result;
+  return result;
 }
 
 /**
@@ -43,10 +52,10 @@ export function prepareResponse<T>(_docs: T[], options: IPaginateOptions, totalD
  * @param sortField The field on which was sorted
  */
 function prepareCursor(doc: InstanceType<any>, sortField: string): string {
-    // Always save _id for secondary sorting.
-    if (sortField && sortField !== "_id") {
-        return bsonUrlEncoding.encode([R.path(sortField.split("."), doc), doc._id]);
-    } else {
-        return bsonUrlEncoding.encode([doc._id]);
-    }
+  // Always save _id for secondary sorting.
+  if (sortField && sortField !== "_id") {
+    return bsonUrlEncoding.encode([R.path(sortField.split("."), doc), doc._id]);
+  } else {
+    return bsonUrlEncoding.encode([doc._id]);
+  }
 }

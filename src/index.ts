@@ -1,4 +1,4 @@
-import { Schema, PopulateOptions } from "mongoose";
+import { Schema, PopulateOptions, Aggregate } from "mongoose";
 import { generateCursorQuery, generateSort } from "./query";
 import { prepareResponse } from "./response";
 import { IPaginateOptions, IPaginateResult } from "./types";
@@ -63,7 +63,62 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     }
   }
 
+  /**
+   * Peform a paginated aggregate() request
+   * @param {IPaginateOptions} options the pagination options
+   * @param {Object} [_pipeline] the mongo aggregate pipeline
+   * @param {Object} [_options] the mongo aggregate options
+   */
+  async function aggregatePaged<T>(
+    options: IPaginateOptions,
+    _pipeline?: any[],
+    _options?: Record<string, unknown>
+  ): Promise<IPaginateResult<T>> {
+    // Determine limit
+    const defaultLimit =
+      pluginOptions && pluginOptions.defaultLimit
+        ? pluginOptions.defaultLimit
+        : 10;
+    const useDefaultLimit =
+      isNaN(options.limit) ||
+      options.limit < 0 ||
+      (options.limit === 0 &&
+        pluginOptions &&
+        pluginOptions.dontAllowUnlimitedResults);
+    const unlimited =
+      options.limit === 0 &&
+      (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
+    options.limit = useDefaultLimit ? defaultLimit : options.limit;
+
+    const sort = { $sort: generateSort(options) };
+    const query = { $match: generateCursorQuery(options) };
+
+    const limit = { $limit: unlimited ? 0 : options.limit + 1 };
+
+    // Request one extra result to check for a next/previous
+    const docs: T[] = await this.aggregate(
+      [sort, query, ..._pipeline, limit],
+      _options
+    );
+
+    if (pluginOptions && pluginOptions.dontReturnTotalDocs) {
+      return prepareResponse<T>(docs, options);
+    } else {
+      const aggregateCountPipeline = [
+        ..._pipeline,
+        {
+          $count: "totalDocs",
+        },
+      ];
+      const totalDocsAggregate: { totalDocs: number } = await this.aggregate(
+        aggregateCountPipeline
+      );
+      return prepareResponse<T>(docs, options, totalDocsAggregate.totalDocs);
+    }
+  }
+
   schema.statics.findPaged = findPaged;
+  schema.statics.aggregatePaged = aggregatePaged;
 }
 
 export * from "./types";

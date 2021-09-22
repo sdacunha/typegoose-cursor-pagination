@@ -34,6 +34,11 @@ export interface IPaginateModel<T> extends Model<DocumentType<T>, {}> {
     projection?: Object,
     _populate?: (Object | string)[]
   ): Query<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
+  aggregatePaged(
+    options: IPaginateOptions,
+    _pipeline?: any[],
+    _options?: Record<string, unknown>
+  ): Query<IPaginateResult<DocumentType<T>>, DocumentType<T>>;
 }
 
 /**
