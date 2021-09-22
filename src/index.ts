@@ -89,19 +89,15 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       options.limit === 0 &&
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
+    const match = generateCursorQuery(options);
 
     const wrapperAggregate: Aggregate<T[]> = this.aggregate();
-
-    console.log({
-      sort: generateSort(options),
-      match: generateCursorQuery(options),
-    });
-
-    wrapperAggregate
-      .sort(generateSort(options))
-      .match(generateCursorQuery(options))
-      .append(_pipeline.pipeline())
-      .limit(unlimited ? 0 : options.limit + 1);
+    wrapperAggregate.sort(generateSort(options));
+    if (Object.keys(match).length) {
+      wrapperAggregate.match(match);
+    }
+    wrapperAggregate.append(_pipeline.pipeline());
+    wrapperAggregate.limit(unlimited ? 0 : options.limit + 1);
 
     const docs: T[] = await wrapperAggregate.exec();
 
