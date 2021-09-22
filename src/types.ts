@@ -36,7 +36,7 @@ export interface IPaginateModel<T> extends Model<DocumentType<T>, {}> {
   ): Query<IPaginateResult<DocumentType<R>>, DocumentType<R>>;
   aggregatePaged<R = T>(
     options: IPaginateOptions,
-    _pipeline?: Aggregate<R>,
+    _pipeline?: Aggregate<R[]>,
     _options?: Record<string, unknown>
   ): Query<IPaginateResult<DocumentType<R>>, DocumentType<R>>;
 }
