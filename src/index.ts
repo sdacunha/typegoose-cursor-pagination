@@ -98,7 +98,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     const docs: T[] = await this.aggregate(
       [sort, query, ..._pipeline, limit],
       _options
-    );
+    ).exec();
 
     if (pluginOptions && pluginOptions.dontReturnTotalDocs) {
       return prepareResponse<T>(docs, options);
@@ -111,7 +111,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       ];
       const totalDocsAggregate: { totalDocs: number } = await this.aggregate(
         aggregateCountPipeline
-      );
+      ).exec();
       return prepareResponse<T>(docs, options, totalDocsAggregate.totalDocs);
     }
   }
