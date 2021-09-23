@@ -98,34 +98,26 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     let totalDocs = undefined;
     let docs: T[] = [];
     if (!dontCountDocs) {
-      const newPipeline: Aggregate<
-        {
-          results: T[];
-          totalCount: [{ count: number }];
-        }[]
-      > = this.aggregate();
+      // We need to execute queries separately since theres no way
+      // to tell what is projected in the pipeline stages
+      // Get documents
+      const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.sort(sort);
+      if (shouldSkip) {
+        newPipeline.match(match);
+      }
       newPipeline.append(_pipeline.pipeline());
-      newPipeline.facet({
-        results: [
-          ...(shouldSkip ? [{ $match: match }] : []),
-          { $limit: limit },
-        ],
-        totalCount: [
-          {
-            $count: "count",
-          },
-        ],
-      });
+      newPipeline.limit(limit);
       const totalDocsAggregate = await newPipeline.exec();
-      const [result] = totalDocsAggregate;
-      const { results, totalCount } = result || {
-        results: [],
-        totalCount: [{ count: 0 }],
-      };
-      const [{ count }] = totalCount || [{ count: 0 }];
-      docs = results;
-      totalDocs = count;
+
+      // Count
+      const countPipeline: Aggregate<[{ count: number }]> = this.aggregate();
+      countPipeline.append(_pipeline.pipeline());
+      countPipeline.count("count");
+      const [countResult] = await countPipeline.exec();
+
+      docs = totalDocsAggregate;
+      totalDocs = countResult.count;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.sort(sort);
