@@ -100,7 +100,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     if (countDocs) {
       const newPipeline: Aggregate<{
         results: T[];
-        totalCount: number;
+        totalCount: [{ count: number }];
       }> = this.aggregate();
       newPipeline.sort(sort);
       newPipeline.append(_pipeline.pipeline());
@@ -117,7 +117,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       });
       const totalDocsAggregate = await newPipeline.exec();
       docs = totalDocsAggregate.results;
-      totalDocs = totalDocsAggregate.totalCount;
+      totalDocs = totalDocsAggregate.totalCount[0].count;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.sort(sort);
