@@ -94,7 +94,9 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     if (countDocs) {
       const newPipeline: Aggregate<{
         totalDocs: number;
-      }> = this.aggregate().append(_pipeline).count("totalDocs") as Aggregate<{
+      }> = this.aggregate()
+        .append(_pipeline.pipeline())
+        .count("totalDocs") as Aggregate<{
         totalDocs: number;
       }>;
       const totalDocsAggregate = await newPipeline.exec();
