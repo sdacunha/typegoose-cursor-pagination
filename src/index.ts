@@ -121,10 +121,10 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.sort(sort);
-      newPipeline.append(_pipeline.pipeline());
       if (shouldSkip) {
         newPipeline.match(match);
       }
+      newPipeline.append(_pipeline.pipeline());
       newPipeline.limit(limit);
       docs = await newPipeline.exec();
     }
