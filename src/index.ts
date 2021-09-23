@@ -89,30 +89,45 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       options.limit === 0 &&
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
     const countDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
+    const match = generateCursorQuery(options);
+    const shouldSkip = Object.keys(match).length > 0;
+    const limit = unlimited ? 0 : options.limit + 1;
+    const sort = generateSort(options);
+    options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
     let totalDocs = undefined;
+    let docs: T[] = [];
     if (countDocs) {
       const newPipeline: Aggregate<{
-        totalDocs: number;
-      }> = this.aggregate()
-        .append(_pipeline.pipeline())
-        .count("totalDocs") as Aggregate<{
-        totalDocs: number;
-      }>;
+        results: T[];
+        totalCount: number;
+      }> = this.aggregate();
+      newPipeline.sort(sort);
+      newPipeline.append(_pipeline.pipeline());
+      newPipeline.facet({
+        results: [
+          ...(shouldSkip ? [{ $match: match }] : []),
+          { $limit: limit },
+        ],
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+      });
       const totalDocsAggregate = await newPipeline.exec();
-      totalDocs = totalDocsAggregate.totalDocs;
-      console.log({ totalDocs });
+      docs = totalDocsAggregate.results;
+      totalDocs = totalDocsAggregate.totalCount;
+    } else {
+      const newPipeline: Aggregate<T[]> = this.aggregate();
+      newPipeline.sort(sort);
+      newPipeline.append(_pipeline.pipeline());
+      if (shouldSkip) {
+        newPipeline.match(match);
+      }
+      newPipeline.limit(limit);
+      docs = await newPipeline.exec();
     }
-
-    options.limit = useDefaultLimit ? defaultLimit : options.limit;
-    const match = generateCursorQuery(options);
-    if (Object.keys(match).length) {
-      console.log({ match });
-      _pipeline.match(match);
-    }
-    _pipeline.limit(unlimited ? 0 : options.limit + 1);
-
-    const docs: T[] = await _pipeline.exec();
 
     return prepareResponse<T>(docs, options, totalDocs);
   }
