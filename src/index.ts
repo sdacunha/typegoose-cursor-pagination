@@ -110,7 +110,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
         .filter((item) => !item.$project._id);
-      if (hasProjectsWithoutId) {
+      if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has stage without _id, aggregatePaged requires _id"
         );
