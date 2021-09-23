@@ -118,7 +118,6 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         ],
       });
       const totalDocsAggregate = await newPipeline.exec();
-      console.log({ totalDocsAggregate });
       const [result] = totalDocsAggregate;
       const { results, totalCount } = result;
       const [{ count }] = totalCount;
