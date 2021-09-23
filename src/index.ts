@@ -89,10 +89,10 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       options.limit === 0 &&
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
     const dontCountDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
-    const match = generateCursorQuery(options);
+    const match = generateCursorQuery(options, true);
     const shouldSkip = Object.keys(match).length > 0;
     const limit = unlimited ? 0 : options.limit + 1;
-    const sort = generateSort(options);
+    const sort = generateSort(options, true);
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
     let totalDocs = undefined;
@@ -104,7 +104,17 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
           totalCount: [{ count: number }];
         }[]
       > = this.aggregate();
+      const userPipeline = _pipeline.pipeline();
+
       newPipeline.append(_pipeline.pipeline());
+      const hasProjectsWithoutId = userPipeline
+        .filter((item) => Object.keys(item).includes("$project"))
+        .filter((item) => !item.$project._id);
+      if (hasProjectsWithoutId) {
+        throw new Error(
+          "Pipeline has stage without _id, aggregatePaged requires _id"
+        );
+      }
       newPipeline.sort(sort);
       newPipeline.facet({
         results: [
