@@ -98,10 +98,12 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     let totalDocs = undefined;
     let docs: T[] = [];
     if (!dontCountDocs) {
-      const newPipeline: Aggregate<{
-        results: T[];
-        totalCount: [{ count: number }];
-      }> = this.aggregate();
+      const newPipeline: Aggregate<
+        {
+          results: T[];
+          totalCount: [{ count: number }];
+        }[]
+      > = this.aggregate();
       newPipeline.sort(sort);
       newPipeline.append(_pipeline.pipeline());
       newPipeline.facet({
@@ -116,8 +118,12 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         ],
       });
       const totalDocsAggregate = await newPipeline.exec();
-      docs = totalDocsAggregate.results;
-      totalDocs = totalDocsAggregate.totalCount[0].count;
+      console.log({ totalDocsAggregate });
+      const [result] = totalDocsAggregate;
+      const { results, totalCount } = result;
+      const [{ count }] = totalCount;
+      docs = results;
+      totalDocs = count;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.sort(sort);
