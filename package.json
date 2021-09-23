@@ -1,6 +1,6 @@
 {
   "name": "@sdacunha/typegoose-cursor-pagination",
-  "version": "1.2.17",
+  "version": "1.2.18",
   "description": "A mongoose plugin to find results using on cursor-based pagination with support for typegoose",
   "main": "lib/index.js",
   "scripts": {
