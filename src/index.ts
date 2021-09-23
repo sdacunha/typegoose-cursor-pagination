@@ -71,7 +71,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
    */
   async function aggregatePaged<T>(
     options: IPaginateOptions,
-    _pipeline?: Aggregate<T>,
+    _pipeline?: Aggregate<T[]>,
     _options?: Record<string, unknown>
   ): Promise<IPaginateResult<T>> {
     // Determine limit
@@ -88,35 +88,31 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     const unlimited =
       options.limit === 0 &&
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
+    const countDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
+
+    let totalDocs = undefined;
+    if (countDocs) {
+      const newPipeline: Aggregate<{
+        totalDocs: number;
+      }> = this.aggregate().append(_pipeline).count("totalDocs") as Aggregate<{
+        totalDocs: number;
+      }>;
+      const totalDocsAggregate = await newPipeline.exec();
+      totalDocs = totalDocsAggregate.totalDocs;
+      console.log({ totalDocs });
+    }
+
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
     const match = generateCursorQuery(options);
-
-    const wrapperAggregate: Aggregate<T[]> = this.aggregate();
-    wrapperAggregate.sort(generateSort(options));
     if (Object.keys(match).length) {
       console.log({ match });
-      wrapperAggregate.match(match);
+      _pipeline.match(match);
     }
-    const pipeline = _pipeline.pipeline();
-    console.log({ pipeline });
-    if (pipeline.length) {
-      wrapperAggregate.append(pipeline);
-    }
-    wrapperAggregate.limit(unlimited ? 0 : options.limit + 1);
+    _pipeline.limit(unlimited ? 0 : options.limit + 1);
 
-    const docs: T[] = await wrapperAggregate.exec();
+    const docs: T[] = await _pipeline.exec();
 
-    if (pluginOptions && pluginOptions.dontReturnTotalDocs) {
-      return prepareResponse<T>(docs, options);
-    } else {
-      const aggregateCountPipeline: Aggregate<T[]> = this.aggregate()
-        .append(_pipeline.pipeline())
-        .count("totalDocs");
-      const totalDocsAggregate: { totalDocs: number } = await this.aggregate(
-        aggregateCountPipeline
-      ).exec();
-      return prepareResponse<T>(docs, options, totalDocsAggregate.totalDocs);
-    }
+    return prepareResponse<T>(docs, options, totalDocs);
   }
 
   schema.statics.findPaged = findPaged;
