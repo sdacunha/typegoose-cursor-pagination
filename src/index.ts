@@ -127,14 +127,14 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         ],
       });
       const totalDocsAggregate = await newPipeline.exec();
-      const [result] = totalDocsAggregate;
+      const [result] = totalDocsAggregate || [];
       const { results, totalCount } = result || {
         results: [],
         totalCount: [{ count: 0 }],
       };
-      const [{ count }] = totalCount || [{ count: 0 }];
+      const countResult = totalCount || [{ count: 0 }];
       docs = results;
-      totalDocs = count;
+      totalDocs = countResult[0]?.count;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.append(_pipeline.pipeline());
