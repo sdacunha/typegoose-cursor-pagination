@@ -88,7 +88,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     const unlimited =
       options.limit === 0 &&
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
-    const countDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
+    const dontCountDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
     const match = generateCursorQuery(options);
     const shouldSkip = Object.keys(match).length > 0;
     const limit = unlimited ? 0 : options.limit + 1;
@@ -97,7 +97,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
 
     let totalDocs = undefined;
     let docs: T[] = [];
-    if (countDocs) {
+    if (!dontCountDocs) {
       const newPipeline: Aggregate<{
         results: T[];
         totalCount: [{ count: number }];
