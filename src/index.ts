@@ -108,7 +108,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       newPipeline.append(userPipeline);
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
-        .filter((item) => !item.$project._id);
+        .filter((item) => item.$project._id === 0);
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project without _id, aggregatePaged requires _id"
