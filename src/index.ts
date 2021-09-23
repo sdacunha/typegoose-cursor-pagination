@@ -105,8 +105,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         }[]
       > = this.aggregate();
       const userPipeline = _pipeline.pipeline();
-
-      newPipeline.append(_pipeline.pipeline());
+      newPipeline.append(userPipeline);
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
         .filter((item) => !item.$project._id);
