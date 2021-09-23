@@ -94,9 +94,14 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     const wrapperAggregate: Aggregate<T[]> = this.aggregate();
     wrapperAggregate.sort(generateSort(options));
     if (Object.keys(match).length) {
+      console.log({ match });
       wrapperAggregate.match(match);
     }
-    wrapperAggregate.append(_pipeline.pipeline());
+    const pipeline = _pipeline.pipeline();
+    console.log({ pipeline });
+    if (pipeline.length) {
+      wrapperAggregate.append(pipeline);
+    }
     wrapperAggregate.limit(unlimited ? 0 : options.limit + 1);
 
     const docs: T[] = await wrapperAggregate.exec();
