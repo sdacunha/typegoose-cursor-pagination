@@ -108,16 +108,14 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       }
       newPipeline.append(_pipeline.pipeline());
       newPipeline.limit(limit);
-      const totalDocsAggregate = await newPipeline.exec();
+      docs = await newPipeline.exec();
 
       // Count
       const countPipeline: Aggregate<[{ count: number }]> = this.aggregate();
       countPipeline.append(_pipeline.pipeline());
       countPipeline.count("count");
-      const [countResult] = await countPipeline.exec();
-
-      docs = totalDocsAggregate;
-      totalDocs = countResult.count;
+      const [{ count }] = await countPipeline.exec();
+      totalDocs = count;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.sort(sort);
