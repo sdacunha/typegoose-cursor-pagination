@@ -134,7 +134,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       };
       const countResult = totalCount || [{ count: 0 }];
       docs = results;
-      totalDocs = countResult[0]?.count;
+      totalDocs = countResult[0]?.count || 0;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       newPipeline.append(_pipeline.pipeline());
