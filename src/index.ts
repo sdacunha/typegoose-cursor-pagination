@@ -111,7 +111,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         .filter((item) => item.$project._id === 0);
       if (hasProjectsWithoutId.length) {
         throw new Error(
-          "Pipeline has $project without _id, aggregatePaged requires _id"
+          "Pipeline has $project that exclude _id, aggregatePaged requires _id"
         );
       }
       newPipeline.sort(sort);
