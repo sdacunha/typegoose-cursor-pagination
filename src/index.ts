@@ -109,12 +109,17 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
         .filter((item) => item.$project._id === 0);
+      const hasSort =
+        userPipeline.filter((item) => Object.keys(item).includes("$sort"))
+          .length > 0;
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
         );
       }
-      newPipeline.sort(sort);
+      if (!hasSort) {
+        newPipeline.sort(sort);
+      }
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
@@ -137,8 +142,14 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       totalDocs = countResult[0]?.count || 0;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
-      newPipeline.append(_pipeline.pipeline());
-      newPipeline.sort(sort);
+      const userPipeline = _pipeline.pipeline();
+      newPipeline.append(userPipeline);
+      const hasSort =
+        userPipeline.filter((item) => Object.keys(item).includes("$sort"))
+          .length > 0;
+      if (!hasSort) {
+        newPipeline.sort(sort);
+      }
       if (shouldSkip) {
         newPipeline.match(match);
       }
