@@ -118,12 +118,12 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         );
       }
       if (!hasSort) {
-        newPipeline.sort(sort);
+        newPipeline.sort(sort as any);
       }
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
-          ...(unlimited ? [{}]: [{ $limit: limit }]),
+          ...(unlimited ? [] : [{ $limit: limit }]),
         ],
         totalCount: [
           {
@@ -148,7 +148,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         userPipeline.filter((item) => Object.keys(item).includes("$sort"))
           .length > 0;
       if (!hasSort) {
-        newPipeline.sort(sort);
+        newPipeline.sort(sort as any);
       }
       if (shouldSkip) {
         newPipeline.match(match);
