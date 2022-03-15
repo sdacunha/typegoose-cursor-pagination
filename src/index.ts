@@ -123,7 +123,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
-          { $limit: limit },
+          ...(unlimited ? [{}]: [{ $limit: limit }]),
         ],
         totalCount: [
           {
@@ -153,7 +153,9 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       if (shouldSkip) {
         newPipeline.match(match);
       }
-      newPipeline.limit(limit);
+      if (!unlimited) {
+        newPipeline.limit(limit);
+      }
       docs = await newPipeline.exec();
     }
 
