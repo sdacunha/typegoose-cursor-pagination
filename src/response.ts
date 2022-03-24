@@ -54,11 +54,10 @@ export function prepareResponse<T>(
 function prepareCursor(doc: InstanceType<any>, sortField: string): string {
   // Always save _id for secondary sorting.
   if (sortField && sortField !== "_id") {
-    return bsonUrlEncoding.encode([
-      R.path(sortField.split("."), doc),
-      doc?._id || "",
-    ]);
+    return doc
+      ? bsonUrlEncoding.encode([R.path(sortField.split("."), doc), doc._id])
+      : "";
   } else {
-    return bsonUrlEncoding.encode([doc?._id || ""]);
+    return doc ? bsonUrlEncoding.encode([doc.id]) : "";
   }
 }
