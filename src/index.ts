@@ -108,7 +108,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       newPipeline.append(userPipeline);
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
-        .filter((item) => item.$project._id === 0);
+        .filter((item) => item.$project?._id === 0);
       const hasSort =
         userPipeline.filter((item) => Object.keys(item).includes("$sort"))
           .length > 0;
