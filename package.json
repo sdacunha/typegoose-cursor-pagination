@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/sdacunha/typegoose-cursor-pagination#readme",
   "dependencies": {
-    "@typegoose/typegoose": "^9.7.0",
+    "@typegoose/typegoose": "^9.7.1",
     "base64-url": "^2.2.0",
     "mongodb-extended-json": "^1.11.1",
     "mongoose": "~6.2.3",
