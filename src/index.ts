@@ -89,7 +89,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       options.limit === 0 &&
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
     const dontCountDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
-    const match = generateCursorQuery(options, true);
+    const match = generateCursorQuery(options);
     const shouldSkip = Object.keys(match).length > 0;
     const limit = unlimited ? 0 : options.limit + 1;
     const sort = generateSort(options, true);
@@ -143,7 +143,15 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       const userPipeline = _pipeline.pipeline();
+      const hasProjectsWithoutId = userPipeline
+        .filter((item) => Object.keys(item).includes("$project"))
+        .filter((item) => item.$project?._id === 0);
       newPipeline.append(userPipeline);
+      if (hasProjectsWithoutId.length) {
+        throw new Error(
+          "Pipeline has $project that exclude _id, aggregatePaged requires _id"
+        );
+      }
       const hasSort =
         userPipeline.filter((item) => Object.keys(item).includes("$sort"))
           .length > 0;
