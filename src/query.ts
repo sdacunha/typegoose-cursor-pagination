@@ -37,7 +37,7 @@ export function generateCursorQuery(options: IPaginateOptions) {
  * Generate a sort object to sort the find() in the correct order
  * @param options The pagination options
  */
-export function generateSort(options: IPaginateOptions, aggregate = false) {
+export function generateSort(options: IPaginateOptions) {
   // Determine sort direction (reversed for previous page)
   const sortAscending =
     (!options.sortAscending && options.previous) ||
@@ -45,7 +45,7 @@ export function generateSort(options: IPaginateOptions, aggregate = false) {
   const sortDirection = sortAscending ? 1 : -1;
 
   // Secondary sort on _id
-  if (options.sortField && !aggregate) {
+  if (options.sortField) {
     return {
       [options.sortField]: sortDirection,
       _id: sortDirection,

@@ -92,7 +92,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     const match = generateCursorQuery(options);
     const shouldSkip = Object.keys(match).length > 0;
     const limit = unlimited ? 0 : options.limit + 1;
-    const sort = generateSort(options, true);
+    const sort = generateSort(options);
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
     let totalDocs = undefined;
@@ -109,17 +109,12 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
         .filter((item) => item.$project?._id === 0);
-      const hasSort =
-        userPipeline.filter((item) => Object.keys(item).includes("$sort"))
-          .length > 0;
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
         );
       }
-      if (!hasSort) {
-        newPipeline.sort(sort as any);
-      }
+      newPipeline.sort(sort as any);
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
