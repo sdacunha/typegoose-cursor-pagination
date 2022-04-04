@@ -91,7 +91,6 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     const dontCountDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
     const match = generateCursorQuery(options);
     const shouldSkip = Object.keys(match).length > 0;
-    const limit = unlimited ? 0 : options.limit + 1;
     const sort = generateSort(options);
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
@@ -123,7 +122,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
-          ...(unlimited ? [] : [{ $limit: limit }]),
+          ...(unlimited ? [] : [{ $limit: options.limit + 1 }]),
         ],
         totalCount: [
           {
@@ -162,7 +161,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         newPipeline.match(match);
       }
       if (!unlimited) {
-        newPipeline.limit(limit);
+        newPipeline.limit(options.limit + 1);
       }
       docs = await newPipeline.exec();
     }
