@@ -26,10 +26,10 @@ export function prepareResponse<T>(
   const hasPrevious =
     options.next || (options.previous && hasMore) ? true : false;
   const hasNext = options.previous || hasMore ? true : false;
-  const next = hasNext
+  const next = hasNext && docs[docs.length - 1]
     ? prepareCursor(docs[docs.length - 1], options.sortField) || undefined
     : undefined;
-  const previous = hasPrevious
+  const previous = hasPrevious && docs[0]
     ? prepareCursor(docs[0], options.sortField) || undefined
     : undefined;
 
