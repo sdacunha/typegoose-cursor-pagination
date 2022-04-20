@@ -1,4 +1,4 @@
-const EJSON = require("mongodb-extended-json");
+const { EJSON } = require("bson");
 import * as base64url from "base64-url";
 
 /**
@@ -6,7 +6,7 @@ import * as base64url from "base64-url";
  * @param obj The BSON object to encode
  */
 export function encode(obj: any): string {
-    return base64url.encode(EJSON.stringify(obj));
+  return base64url.encode(EJSON.stringify(obj));
 }
 
 /**
@@ -14,5 +14,5 @@ export function encode(obj: any): string {
  * @param str The URL-safe string to decode
  */
 export function decode(str: string): any {
-    return EJSON.parse(base64url.decode(str));
+  return EJSON.parse(base64url.decode(str));
 }
