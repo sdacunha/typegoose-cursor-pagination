@@ -23,9 +23,8 @@ export function prepareResponse<T>(
   const docs = options.previous ? _docs.reverse() : _docs;
 
   // Next/previous page data
-  const hasPrevious =
-    options.next || (options.previous && hasMore) ? true : false;
-  const hasNext = options.previous || hasMore ? true : false;
+  const hasPrevious = !!options.next || (options.previous && hasMore);
+  const hasNext = !!options.previous || hasMore;
   const next = hasNext
     ? prepareCursor(docs[docs.length - 1], options.sortField)
     : undefined;

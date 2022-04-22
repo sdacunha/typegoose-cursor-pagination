@@ -107,7 +107,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       newPipeline.append(userPipeline);
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
-        .filter((item) => item.$project?._id === 0);
+        .filter((item) => item.$project?._id === 0 || item.$project?.$id);
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
@@ -115,7 +115,6 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       }
 
       newPipeline.sort(sort as any);
-
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
@@ -129,13 +128,10 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       });
       const totalDocsAggregate = await newPipeline.exec();
       const [result] = totalDocsAggregate || [];
-      const { results, totalCount } = result || {
-        results: [],
-        totalCount: [{ count: 0 }],
-      };
-      const countResult = totalCount || [{ count: 0 }];
+      const { results, totalCount } = result;
+      const countResult = totalCount;
       docs = results;
-      totalDocs = countResult[0]?.count || 0;
+      totalDocs = countResult[0].count || 0;
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       const userPipeline = _pipeline.pipeline();
