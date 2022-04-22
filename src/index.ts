@@ -131,7 +131,8 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const { results, totalCount } = result;
       const countResult = totalCount;
       docs = results;
-      totalDocs = countResult[0].count || 0;
+      totalDocs = countResult[0]?.count || 0;
+      console.log({ docs, totalDocs });
     } else {
       const newPipeline: Aggregate<T[]> = this.aggregate();
       const userPipeline = _pipeline.pipeline();
