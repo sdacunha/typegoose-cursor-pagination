@@ -26,10 +26,10 @@ export function prepareResponse<T>(
   const hasPrevious =
     options.next || (options.previous && hasMore) ? true : false;
   const hasNext = options.previous || hasMore ? true : false;
-  const next = hasNext && docs[docs.length - 1]
+  const next = hasNext
     ? prepareCursor(docs[docs.length - 1], options.sortField) || undefined
     : undefined;
-  const previous = hasPrevious && docs[0]
+  const previous = hasPrevious
     ? prepareCursor(docs[0], options.sortField) || undefined
     : undefined;
 
@@ -54,7 +54,7 @@ export function prepareResponse<T>(
 function prepareCursor(doc: InstanceType<any>, sortField: string): string {
   // Always save _id for secondary sorting.
   if (sortField && sortField !== "_id") {
-    return bsonUrlEncoding.encode([R.path(sortField.split("."), doc), doc._id])
+    return bsonUrlEncoding.encode([R.path(sortField.split("."), doc), doc._id]);
   } else {
     return bsonUrlEncoding.encode([doc._id]);
   }
