@@ -107,16 +107,15 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       newPipeline.append(userPipeline);
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
-        .filter((item) => item.$project?._id === 0 || item.$project?.$id);
-      const hasSort = !!userPipeline.filter((item) =>
-        Object.keys(item).includes("$sort")
-      ).length;
+        .filter((item) => item.$project?._id === 0);
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
         );
       }
-
+      const hasSort =
+        userPipeline.filter((item) => Object.keys(item).includes("$sort"))
+          .length > 0;
       if (!hasSort) {
         newPipeline.sort(sort as any);
       }
@@ -133,8 +132,11 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       });
       const totalDocsAggregate = await newPipeline.exec();
       const [result] = totalDocsAggregate || [];
-      const { results, totalCount } = result;
-      const countResult = totalCount;
+      const { results, totalCount } = result || {
+        results: [],
+        totalCount: [{ count: 0 }],
+      };
+      const countResult = totalCount || [{ count: 0 }];
       docs = results;
       totalDocs = countResult[0]?.count || 0;
     } else {
@@ -143,20 +145,18 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
         .filter((item) => item.$project?._id === 0);
-      const hasSort = !!userPipeline.filter((item) =>
-        Object.keys(item).includes("$sort")
-      ).length;
       newPipeline.append(userPipeline);
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
         );
       }
-
+      const hasSort =
+        userPipeline.filter((item) => Object.keys(item).includes("$sort"))
+          .length > 0;
       if (!hasSort) {
         newPipeline.sort(sort as any);
       }
-
       if (shouldSkip) {
         newPipeline.match(match);
       }
