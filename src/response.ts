@@ -51,6 +51,9 @@ export function prepareResponse<T>(
  * @param sortField The field on which was sorted
  */
 function prepareCursor(doc: InstanceType<any>, sortField: string): string {
+  if (!doc) {
+    return null;
+  }
   // Always save _id for secondary sorting.
   if (sortField && sortField !== "_id") {
     return bsonUrlEncoding.encode([
