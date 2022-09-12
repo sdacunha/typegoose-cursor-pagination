@@ -1,4 +1,4 @@
-import { Schema, PopulateOptions, Aggregate } from "mongoose";
+import { Schema, PopulateOptions, Aggregate, PipelineStage } from "mongoose";
 import { generateCursorQuery, generateSort } from "./query";
 import { prepareResponse } from "./response";
 import { IPaginateOptions, IPaginateResult } from "./types";
@@ -104,10 +104,10 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
         }[]
       > = this.aggregate();
       const userPipeline = _pipeline.pipeline();
-      newPipeline.append(userPipeline);
+      newPipeline.append(...userPipeline);
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
-        .filter((item) => item.$project?._id === 0);
+        .filter((item) => (item as PipelineStage.Project)?.$project?._id === 0);
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
@@ -144,8 +144,8 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const userPipeline = _pipeline.pipeline();
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
-        .filter((item) => item.$project?._id === 0);
-      newPipeline.append(userPipeline);
+        .filter((item) => (item as PipelineStage.Project)?.$project?._id === 0);
+      newPipeline.append(...userPipeline);
       if (hasProjectsWithoutId.length) {
         throw new Error(
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
