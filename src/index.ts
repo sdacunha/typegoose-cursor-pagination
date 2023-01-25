@@ -1,5 +1,5 @@
-import { Schema, PopulateOptions, Aggregate, PipelineStage } from "mongoose";
-import { generateCursorQuery, generateSort } from "./query";
+import { Schema, PopulateOptions, Aggregate, PipelineStage, Expression } from "mongoose";
+import { generateCursorQuery, generateSort, normalizeSortOptions } from "./query";
 import { prepareResponse } from "./response";
 import { IPaginateOptions, IPaginateResult } from "./types";
 
@@ -79,20 +79,26 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       pluginOptions && pluginOptions.defaultLimit
         ? pluginOptions.defaultLimit
         : 10;
+
     const useDefaultLimit =
       isNaN(options.limit) ||
       options.limit < 0 ||
       (options.limit === 0 &&
         pluginOptions &&
         pluginOptions.dontAllowUnlimitedResults);
+
     const unlimited =
       options.limit === 0 &&
       (!pluginOptions || !pluginOptions.dontAllowUnlimitedResults);
+
     const dontCountDocs = pluginOptions && pluginOptions.dontReturnTotalDocs;
+    
+    options.sortOptions = normalizeSortOptions(options.sortOptions);
+    options.limit = useDefaultLimit ? defaultLimit : options.limit;
+
     const match = generateCursorQuery(options);
     const shouldSkip = Object.keys(match).length > 0;
     const sort = generateSort(options);
-    options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
     let totalDocs = undefined;
     let docs: T[] = [];
@@ -116,9 +122,10 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasSort =
         userPipeline.filter((item) => Object.keys(item).includes("$sort"))
           .length > 0;
-      if (!hasSort) {
-        newPipeline.sort(sort as any);
+      if (hasSort) {
+        throw new Error('Pipeline has "$sort" stage, use "sortOptions" option instead');
       }
+      newPipeline.sort(sort);
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
@@ -154,9 +161,13 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasSort =
         userPipeline.filter((item) => Object.keys(item).includes("$sort"))
           .length > 0;
-      if (!hasSort) {
-        newPipeline.sort(sort as any);
+      
+      if (hasSort) {
+        throw new Error('Pipeline has "$sort" stage, use "sortOptions" option instead');
       }
+
+      newPipeline.sort(sort);
+
       if (shouldSkip) {
         newPipeline.match(match);
       }

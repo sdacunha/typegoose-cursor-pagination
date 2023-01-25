@@ -1,13 +1,17 @@
 import { Aggregate, Model, Query } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
 
+
+export type SortOptions = {
+  [key: string]: 1 | -1;
+};
+
 /**
  * The pagination options that can be passed.
  */
 export interface IPaginateOptions {
   limit?: number;
-  sortField?: string;
-  sortAscending?: Boolean;
+  sortOptions?: SortOptions[];
   next?: string;
   previous?: string;
 }
