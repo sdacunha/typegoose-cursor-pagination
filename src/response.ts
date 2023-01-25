@@ -47,11 +47,11 @@ export function prepareResponse<T>(
  * @param doc The document from which to start the next/previous page
  * @param sortField The field on which was sorted
  */
-function prepareCursor(doc: InstanceType<any>, sortOptions: SortOptions[]): string {
+function prepareCursor(doc: InstanceType<any>, sortOptions: SortOptions): string {
   // Always save _id for secondary sorting.
-
+  const keysExceptId = Object.keys(sortOptions).filter((key) => key !== "_id");
   return bsonUrlEncoding.encode([
-    ...Object.keys(sortOptions.slice(0, -1)).map((sortField) => R.path(sortField.split("."), doc)),
+    ...Object.keys(keysExceptId).map((key) => R.path(key.split("."), doc)),
     doc._id,
   ]);
 }

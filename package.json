@@ -4,6 +4,7 @@
   "description": "A mongoose plugin to find results using on cursor-based pagination with support for typegoose",
   "main": "lib/index.js",
   "scripts": {
+    "dev": "tsc --watch",
     "build": "tsc -p tsconfig.json -d",
     "test": "ava",
     "lint": "tslint -c ./tslint.json './src/**/*.ts'",

@@ -4,20 +4,20 @@ import { Expression, PipelineStage } from "mongoose";
 import merge from 'lodash/merge';
 
 
-export const normalizeSortOptions = (sortOptions: SortOptions[]): SortOptions[] => {
+export const normalizeSortOptions = (sortOptions: SortOptions): SortOptions => {
   const fields = Object.keys(sortOptions || []);
-  let newOptions: SortOptions[] = sortOptions;
-  if (!sortOptions) {
-    newOptions = [];
-    newOptions.push({ '_id': 1 });
-  } else if (fields.includes('_id')) {
+  let newOptions: SortOptions = sortOptions;
+ if (fields.includes('_id')) {
     // Ensure id is at the end
-    const newSortFields = sortOptions.filter((field) => !field._id);
-    const _idSort = sortOptions.find((field) => !!field._id);
-    newSortFields.push(_idSort);
+    const keysExceptId = fields.filter((field) => field !== '_id');
+    let newSortFields = keysExceptId.reduce((acc, field) => ({ 
+      ...acc,
+      [field]: sortOptions[field],
+    }), {});
+    newSortFields = { ...newSortFields, _id: sortOptions._id };
     newOptions = newSortFields;
   } else {
-    newOptions.push({ '_id': 1 });
+     newOptions = { _id: 1 };
   }
   return newOptions;
 };
@@ -55,22 +55,18 @@ export function generateCursorQuery(options: IPaginateOptions) {
 
   // Decode cursor string
   const decoded = bsonUrlEncoding.decode(options.previous || options.next);
-  const sortByField = options.sortOptions.reduce((acc, field) => ({
-    ...acc,
-    [Object.keys(field)[0]]: Object.values(field)[0],
-  }), {});
-
-  const isOnlyIdSort = options.sortOptions.length === 1 && !!options.sortOptions[0]._id;
+  const isOnlyIdSort = Object.keys(options.sortOptions).length === 1 && !!options.sortOptions._id;
+  const keysExceptId = Object.keys(options.sortOptions).filter((field) => field !== '_id');
 
   const firstCondition: Record<string, unknown> = merge(
-    Object.keys(options.sortOptions.slice(0, -1))
+    Object.keys(keysExceptId)
           .map((field, index) => ({ 
-            [field]: { [getSortComparer(!!options.previous, sortByField[field])]: decoded[index] } })
+            [field]: { [getSortComparer(!!options.previous, options.sortOptions[field])]: decoded[index] } })
           ));
 
   const secondCondition = merge([
-    ...Object.keys(options.sortOptions.slice(0, -1)).map((field, index) => ({ [field]: decoded[index] })), 
-    { _id: { [getSortComparer(!!options.previous, sortByField._id)]: decoded[decoded.length - 1] } }
+    ...Object.keys(keysExceptId).map((field, index) => ({ [field]: decoded[index] })), 
+    { _id: { [getSortComparer(!!options.previous, options.sortOptions._id)]: decoded[decoded.length - 1] } }
   ]);
   
   if (!isOnlyIdSort) {
@@ -79,7 +75,7 @@ export function generateCursorQuery(options: IPaginateOptions) {
       secondCondition,
     ];
   } else {
-    query._id = { [getSortComparer(!!options.previous, sortByField._id)]: decoded[0] };
+    query._id = { [getSortComparer(!!options.previous, options.sortOptions._id)]: decoded[0] };
   }
   return query;
 }
@@ -90,19 +86,16 @@ export function generateCursorQuery(options: IPaginateOptions) {
  */
 export function generateSort(options: IPaginateOptions): Record<string, 1 | -1 | Expression.Meta> {
   // We need to normalize where _id is, and the existence of _id
-  const isOnlyIdSort = options.sortOptions.length === 1 && !!options.sortOptions[0]._id;
+  const isOnlyIdSort = Object.keys(options.sortOptions).length === 1 && !!options.sortOptions._id;
 
   // Secondary sort on _id
   if (!isOnlyIdSort) {
     return {
-      ...options.sortOptions.reduce((acc, field) => ({
-        ...acc,
-        [Object.keys(field)[0]]: getSortDirection(!!options.previous, Object.values(field)[0]),
-      }), {}),
+      ...options.sortOptions
     }
   } else {
     return {
-      _id: getSortDirection(!!options.previous, options.sortOptions[0]._id),
+      _id: getSortDirection(!!options.previous, options.sortOptions._id),
     };
   }
 }
