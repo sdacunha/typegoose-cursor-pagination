@@ -1,8 +1,8 @@
-import { Aggregate, Model, Query } from "mongoose";
+import { Aggregate, Expression, Model, Query } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
 
 
-export type SortOptions = Record<string, -1 | 1>;
+export type SortOptions = Record<string, 1 | -1 | Expression.Meta>;
 
 /**
  * The pagination options that can be passed.

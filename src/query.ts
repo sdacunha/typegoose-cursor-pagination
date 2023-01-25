@@ -22,30 +22,32 @@ export const normalizeSortOptions = (sortOptions: SortOptions): SortOptions => {
   return newOptions;
 };
 
-const getSortComparer = (isPrevious: boolean, number: number): "$gt" | "$lt" => {
-  if (number === 1 || number === -1 && isPrevious) {
-    return "$lt";
+const getSortComparer = (isPrevious: boolean, val: -1 | 1 | Expression.Meta): "$gt" | "$lt" => {
+  if (val === 1 || val === -1) {
+    if (val === 1 || val === -1 && isPrevious) {
+      return "$gt";
+    }
+    if (val === -1 || val === 1 && isPrevious) {
+      return "$lt";
+    }
   }
-  if (number === -1 || number === 1 && isPrevious) {
-    return "$gt";
-  }
-  throw new Error("Invalid sort number");
+  // textScore, sort desc
+  return "$lt";
 }
 
-const getSortDirection = (isPrevious: boolean, number: number): 1 | -1 => {
-  if (number === 1 || number === -1 && isPrevious) {
-    return 1;
+const getSortDirection = (isPrevious: boolean, val: -1 | 1 | Expression.Meta): 1 | -1 => {
+  if (val === 1 || val === -1) {
+    if (val === 1 || val === -1 && isPrevious) {
+      return 1;
+    }
+    if (val === -1 || val === 1 && isPrevious) {
+      return -1;
+    }
   }
-  if (number === -1 || number === 1 && isPrevious) {
-    return -1;
-  }
-  throw new Error("Invalid sort number");
+  // textScore, sort desc
+  return -1;
 }
 
-/**
- * Generate a query object for the next/previous page
- * @param options The pagination options
- */
 export function generateCursorQuery(options: IPaginateOptions) {
   // Return an empty query upon no cursor string
   const query: any = {};
