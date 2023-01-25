@@ -24,10 +24,10 @@ export const normalizeSortOptions = (sortOptions: SortOptions): SortOptions => {
 
 const getSortComparer = (isPrevious: boolean, number: number): "$gt" | "$lt" => {
   if (number === 1 || number === -1 && isPrevious) {
-    return "$gt";
+    return "$lt";
   }
   if (number === -1 || number === 1 && isPrevious) {
-    return "$lt";
+    return "$gt";
   }
   throw new Error("Invalid sort number");
 }
@@ -58,16 +58,20 @@ export function generateCursorQuery(options: IPaginateOptions) {
   const isOnlyIdSort = Object.keys(options.sortOptions).length === 1 && !!options.sortOptions._id;
   const keysExceptId = Object.keys(options.sortOptions).filter((field) => field !== '_id');
 
-  const firstCondition: Record<string, unknown> = merge(
-    Object.keys(keysExceptId)
-          .map((field, index) => ({ 
-            [field]: { [getSortComparer(!!options.previous, options.sortOptions[field])]: decoded[index] } })
-          ));
+  const firstCondition: Record<string, -1 | 1> = keysExceptId.reduce((acc, field, index) => ({
+      ...acc,
+      [field]: { [getSortComparer(!!options.previous, options.sortOptions[field])]: decoded[index] },
+    }), {});
 
-  const secondCondition = merge([
-    ...Object.keys(keysExceptId).map((field, index) => ({ [field]: decoded[index] })), 
-    { _id: { [getSortComparer(!!options.previous, options.sortOptions._id)]: decoded[decoded.length - 1] } }
-  ]);
+  const secondValues: Record<string, -1 | 1> = keysExceptId.reduce((acc, field, index) => ({
+      ...acc,
+      [field]: decoded[index],
+    }), {});
+
+  const secondCondition = {
+    ...secondValues, 
+    _id: { [getSortComparer(!!options.previous, options.sortOptions._id)]: decoded[decoded.length - 1] },
+  };
   
   if (!isOnlyIdSort) {
     query.$or = [

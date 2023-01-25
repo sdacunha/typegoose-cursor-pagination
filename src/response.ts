@@ -1,12 +1,11 @@
 import { IPaginateResult, IPaginateOptions, SortOptions } from "./types";
 import * as bsonUrlEncoding from "./utils/bsonUrlEncoding";
-import R from "ramda";
+import R from 'ramda';
 
 /**
  * Prepare a response to send back to the client
  * @param _docs The documents that are returned by the find() query
- * @param options The pagination options
- * @param totalDocs The total amount of documents (without limit)
+ * @param options The pagination optionsget
  */
 export function prepareResponse<T>(
   _docs: T[],
@@ -50,8 +49,9 @@ export function prepareResponse<T>(
 function prepareCursor(doc: InstanceType<any>, sortOptions: SortOptions): string {
   // Always save _id for secondary sorting.
   const keysExceptId = Object.keys(sortOptions).filter((key) => key !== "_id");
+  const values = keysExceptId.map((key) => R.path(key.split('.'), doc));
   return bsonUrlEncoding.encode([
-    ...Object.keys(keysExceptId).map((key) => R.path(key.split("."), doc)),
+    ...values,
     doc._id,
   ]);
 }

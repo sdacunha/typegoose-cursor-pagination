@@ -172,7 +172,6 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       }
       docs = await newPipeline.exec();
     }
-
     return prepareResponse<T>(docs, options, totalDocs);
   }
 
