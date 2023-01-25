@@ -122,10 +122,9 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasSort =
         userPipeline.filter((item) => Object.keys(item).includes("$sort"))
           .length > 0;
-      if (hasSort) {
-        throw new Error('Pipeline has "$sort" stage, use "sortOptions" option instead');
+      if (!hasSort) {
+        newPipeline.sort(sort);
       }
-      newPipeline.sort(sort);
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
@@ -161,13 +160,10 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       const hasSort =
         userPipeline.filter((item) => Object.keys(item).includes("$sort"))
           .length > 0;
-      
-      if (hasSort) {
-        throw new Error('Pipeline has "$sort" stage, use "sortOptions" option instead');
+  
+      if (!hasSort) {
+        newPipeline.sort(sort);
       }
-
-      newPipeline.sort(sort);
-
       if (shouldSkip) {
         newPipeline.match(match);
       }
