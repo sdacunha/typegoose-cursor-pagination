@@ -101,6 +101,9 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     const existingSorts = sortPipelines.map((item) => (item as PipelineStage.Sort)?.$sort).reduce((acc, item) => ({ ...acc, ...item }), {});
 
     options.sortOptions = hasSort ? existingSorts : normalizeSortOptions(options.sortOptions);
+    if (!options.sortOptions._id) {
+      throw Error('sort must include _id');
+    }
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
     const match = generateCursorQuery(options);
