@@ -151,12 +151,9 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
         );
       }
-      const hasSort =
-        userPipeline.filter((item) => Object.keys(item).includes("$sort"))
-          .length > 0;
-      if (!hasSort) {
-        newPipeline.sort(sort as any);
-      }
+      
+      newPipeline.sort(sort as any);
+
       if (shouldSkip) {
         newPipeline.match(match);
       }
