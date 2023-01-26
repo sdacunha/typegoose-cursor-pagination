@@ -59,7 +59,6 @@ const generateEqualQuery = (isPrevious: boolean, index: number, key: string, fie
 }
 
 const getSortDirection = (isPrevious: boolean, val: -1 | 1 | Expression.Meta): 1 | -1 => {
-  console.log(({ isPrevious, val }))
   if (val === 1 || val === -1) {
     if (val === 1 || val === -1 && isPrevious) {
       return 1;
