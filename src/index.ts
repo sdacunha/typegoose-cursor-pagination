@@ -1,5 +1,5 @@
 import { Schema, PopulateOptions, Aggregate, PipelineStage, Expression } from "mongoose";
-import { generateCursorQuery, generateSort, normalizeSortOptions } from "./query";
+import { generateCursorQuery, normalizeSortOptions } from "./query";
 import { prepareResponse } from "./response";
 import { IPaginateOptions, IPaginateResult, SortOptions } from "./types";
 
@@ -28,7 +28,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     _populate?: PopulateOptions | PopulateOptions[]
   ): Promise<IPaginateResult<T>> {
     // Determine sort
-    const sort = generateSort(options);
+    const sort = normalizeSortOptions(options.sortOptions);
 
     // Determine limit
     const defaultLimit =
@@ -106,9 +106,9 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
     }
     options.limit = useDefaultLimit ? defaultLimit : options.limit;
 
+    const sort = options.sortOptions;
     const match = generateCursorQuery(options);
     const shouldSkip = Object.keys(match).length > 0;
-    const sort = generateSort(options);
 
     let totalDocs = undefined;
     let docs: T[] = [];

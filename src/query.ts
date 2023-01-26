@@ -91,23 +91,3 @@ export function generateCursorQuery(options: IPaginateOptions) {
    */
   return { $or: query };
 }
-
-/**
- * Generate a sort object to sort the find() in the correct order
- * @param options The pagination options
- */
-export function generateSort(options: IPaginateOptions): Record<string, 1 | -1 | Expression.Meta> {
-  // We need to normalize where _id is, and the existence of _id
-  const isOnlyIdSort = Object.keys(options.sortOptions).length === 1 && !!options.sortOptions._id;
-
-  // Secondary sort on _id
-  if (!isOnlyIdSort) {
-    return {
-      ...options.sortOptions
-    }
-  } else {
-    return {
-      _id: getSortDirection(!!options.previous, options.sortOptions._id),
-    };
-  }
-}
