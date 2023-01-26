@@ -112,14 +112,22 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
 
     let totalDocs = undefined;
     let docs: T[] = [];
+
+    // Append the sort to the pipeline if it doesn't already exist
+    const hasProjectsWithoutId = userPipeline
+      .filter((item) => Object.keys(item).includes("$project"))
+      .filter((item) => (item as PipelineStage.Project)?.$project?._id === 0);
+    if (hasProjectsWithoutId.length) {
+      throw new Error("Pipeline has $project that exclude _id, aggregatePaged requires _id");
+    }
+    const newPipeline: Aggregate<
+    {
+      results: T[];
+      totalCount: [{ count: number }];
+    }[] | T[]> = this.aggregate();
+
+    newPipeline.append(...userPipeline.filter((item) => !Object.keys(item).includes("$sort")));
     if (!dontCountDocs) {
-      const newPipeline: Aggregate<
-        {
-          results: T[];
-          totalCount: [{ count: number }];
-        }[]
-      > = this.aggregate();
-      newPipeline.append(...userPipeline);
       const hasProjectsWithoutId = userPipeline
         .filter((item) => Object.keys(item).includes("$project"))
         .filter((item) => (item as PipelineStage.Project)?.$project?._id === 0);
@@ -128,13 +136,11 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
           "Pipeline has $project that exclude _id, aggregatePaged requires _id"
         );
       }
-    
-      if (!hasSort) {
-        newPipeline.sort(sort);
-      }
+
       newPipeline.facet({
         results: [
           ...(shouldSkip ? [{ $match: match }] : []),
+          { $sort: sort },
           ...(unlimited ? [] : [{ $limit: options.limit + 1 }]),
         ],
         totalCount: [
@@ -143,7 +149,7 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
           },
         ],
       });
-      const totalDocsAggregate = await newPipeline.exec();
+      const totalDocsAggregate = await newPipeline.exec() as { results: T[]; totalCount: [{ count: number }] }[];
       const [result] = totalDocsAggregate || [];
       const { results, totalCount } = result || {
         results: [],
@@ -153,26 +159,16 @@ export default function (schema: Schema, pluginOptions?: IPluginOptions) {
       docs = results;
       totalDocs = countResult[0]?.count || 0;
     } else {
-      const newPipeline: Aggregate<T[]> = this.aggregate();
-      const hasProjectsWithoutId = userPipeline
-        .filter((item) => Object.keys(item).includes("$project"))
-        .filter((item) => (item as PipelineStage.Project)?.$project?._id === 0);
-      newPipeline.append(...userPipeline);
-      if (hasProjectsWithoutId.length) {
-        throw new Error(
-          "Pipeline has $project that exclude _id, aggregatePaged requires _id"
-        );
-      }
-      if (!hasSort) {
-        newPipeline.sort(sort);
-      }
       if (shouldSkip) {
         newPipeline.match(match);
       }
+      
+      newPipeline.sort(sort);
+    
       if (!unlimited) {
         newPipeline.limit(options.limit + 1);
       }
-      docs = await newPipeline.exec();
+      docs = await newPipeline.exec() as T[];
     }
     return prepareResponse<T>(docs, options, totalDocs);
   }

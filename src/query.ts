@@ -35,7 +35,31 @@ const getSortComparer = (isPrevious: boolean, val: -1 | 1 | Expression.Meta): "$
   return "$lt";
 }
 
+const generateEqualQuery = (isPrevious: boolean, index: number, key: string, fields: Record<string, 1 | -1 | Expression.Meta>, decoded: any[]) => {
+  const keysEqual = Object.keys(fields).slice(0, index);
+
+  // Here, we check if the fields previous to the field we are checking is equal
+  const equalQuery = keysEqual.reduce((acc, field, index) => {
+    const val = fields[field];
+    return {
+      ...acc,
+      [field]: decoded[index]
+    }
+  }, {});
+
+  // Now, we ensure that the sort order is maintained by verifying the fields below it
+  const checkQuery = {
+    [key]: { [getSortComparer(isPrevious, fields[key])]: decoded[index] },
+  }
+
+  return {
+    ...equalQuery,
+    ...checkQuery,
+  }
+}
+
 const getSortDirection = (isPrevious: boolean, val: -1 | 1 | Expression.Meta): 1 | -1 => {
+  console.log(({ isPrevious, val }))
   if (val === 1 || val === -1) {
     if (val === 1 || val === -1 && isPrevious) {
       return 1;
@@ -50,40 +74,23 @@ const getSortDirection = (isPrevious: boolean, val: -1 | 1 | Expression.Meta): 1
 
 export function generateCursorQuery(options: IPaginateOptions) {
   // Return an empty query upon no cursor string
-  const query: any = {};
   if (!options.next && !options.previous) {
-    return query;
+    return {};
   }
 
   // Decode cursor string
   const decoded = bsonUrlEncoding.decode(options.previous || options.next);
-  const isOnlyIdSort = Object.keys(options.sortOptions).length === 1 && !!options.sortOptions._id;
-  const keysExceptId = Object.keys(options.sortOptions).filter((field) => field !== '_id');
+  const keys = Object.keys(options.sortOptions);
 
-  const firstCondition: Record<string, -1 | 1> = keysExceptId.reduce((acc, field, index) => ({
-      ...acc,
-      [field]: { [getSortComparer(!!options.previous, options.sortOptions[field])]: decoded[index] },
-    }), {});
-
-  const secondValues: Record<string, -1 | 1> = keysExceptId.reduce((acc, field, index) => ({
-      ...acc,
-      [field]: decoded[index],
-    }), {});
-
-  const secondCondition = {
-    ...secondValues, 
-    _id: { [getSortComparer(!!options.previous, options.sortOptions._id)]: decoded[decoded.length - 1] },
-  };
+  // Generate the query for the case that the first n are equal, but the next satisfies the sort condition
+  const query = keys.map((key, index) => {
+    return generateEqualQuery(!!options.previous, index, key, options.sortOptions, decoded);
+  });
   
-  if (!isOnlyIdSort) {
-    query.$or = [
-      firstCondition,
-      secondCondition,
-    ];
-  } else {
-    query._id = { [getSortComparer(!!options.previous, options.sortOptions._id)]: decoded[0] };
-  }
-  return query;
+  /**
+   * 
+   */
+  return { $or: query };
 }
 
 /**
