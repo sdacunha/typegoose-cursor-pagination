@@ -16,8 +16,11 @@ export const normalizeSortOptions = (sortOptions: SortOptions): SortOptions => {
     }), {});
     newSortFields = { ...newSortFields, _id: sortOptions._id };
     newOptions = newSortFields;
+  } else if (fields.length > 0) {
+    // If no _id, add it
+     newOptions = { ...newOptions, _id: 1 };
   } else {
-     newOptions = { _id: 1 };
+    newOptions = { _id: 1 };
   }
   return newOptions;
 };
