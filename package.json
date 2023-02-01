@@ -36,11 +36,11 @@
   },
   "homepage": "https://github.com/sdacunha/typegoose-cursor-pagination#readme",
   "dependencies": {
-    "@typegoose/typegoose": "^10.0.0",
+    "@typegoose/typegoose": "^10.1.0",
     "base64-url": "^2.2.0",
     "bson": "^4.6.3",
     "lodash": "^4.17.21",
-    "mongoose": "~6.8.0",
+    "mongoose": "~6.9.0",
     "ramda": "^0.27.2"
   },
   "devDependencies": {
