@@ -1,8 +1,6 @@
 import * as bsonUrlEncoding from "./utils/bsonUrlEncoding";
 import { IPaginateOptions, SortOptions } from "./types";
-import { Expression, PipelineStage } from "mongoose";
-import merge from 'lodash/merge';
-
+import { Expression } from "mongoose";
 
 export const normalizeSortOptions = (sortOptions: SortOptions): SortOptions => {
   const fields = Object.keys(sortOptions || []);

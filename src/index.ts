@@ -1,7 +1,7 @@
 import { Schema, PopulateOptions, Aggregate, PipelineStage, Expression } from "mongoose";
 import { generateCursorQuery, normalizeSortOptions } from "./query";
 import { prepareResponse } from "./response";
-import { IPaginateOptions, IPaginateResult, SortOptions } from "./types";
+import { IPaginateOptions, IPaginateResult } from "./types";
 
 export interface IPluginOptions {
   dontReturnTotalDocs?: boolean;
