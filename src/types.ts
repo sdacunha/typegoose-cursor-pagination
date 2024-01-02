@@ -43,6 +43,13 @@ export interface IPaginateModel<T> extends Model<DocumentType<T>, {}> {
   ): Query<IPaginateResult<DocumentType<R>>, DocumentType<R>>;
 }
 
+export interface IPluginOptions {
+  dontReturnTotalDocs?: boolean;
+  dontAllowUnlimitedResults?: boolean;
+  defaultLimit?: number;
+}
+
+
 /**
  * [Typegoose only] This is a type that you can cast your Typegoose model to
  * Example: export const UserModel = new User().getModelForClass(User) as unknown as PaginateModel<User, typeof User>;

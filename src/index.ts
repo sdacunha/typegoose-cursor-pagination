@@ -1,14 +1,7 @@
 import { Schema, PopulateOptions, Aggregate, PipelineStage, Expression } from "mongoose";
 import { generateCursorQuery, normalizeSortOptions } from "./query";
 import { prepareResponse } from "./response";
-import { IPaginateOptions, IPaginateResult } from "./types";
-
-export interface IPluginOptions {
-  dontReturnTotalDocs?: boolean;
-  dontAllowUnlimitedResults?: boolean;
-  defaultLimit?: number;
-}
-
+import { IPaginateOptions, IPaginateResult, IPluginOptions } from "./types";
 /**
  * A mongoose plugin to perform paginated find() requests.
  * @param schema the schema for the plugin
