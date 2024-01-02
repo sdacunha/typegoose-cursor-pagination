@@ -100,7 +100,7 @@ export default class User extends Typegoose {
 
 });
 
-export const UserModel = new User().getModelForClass(User) as PaginateModel<User, typeof User>;
+export const UserModel = new User().getModelForClass(User) as unknown as PaginateModel<User, typeof User>;
 ```
 
 ### Example

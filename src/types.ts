@@ -45,6 +45,6 @@ export interface IPaginateModel<T> extends Model<DocumentType<T>, {}> {
 
 /**
  * [Typegoose only] This is a type that you can cast your Typegoose model to
- * Example: export const UserModel = new User().getModelForClass(User) as PaginateModel<User, typeof User>;
+ * Example: export const UserModel = new User().getModelForClass(User) as unknown as PaginateModel<User, typeof User>;
  */
 export type PaginateModel<T, T2> = IPaginateModel<DocumentType<T>> & T & T2;

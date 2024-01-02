@@ -39,13 +39,11 @@
     "@typegoose/typegoose": "^12.0.0",
     "base64-url": "^2.3.3",
     "bson": "^6.2.0",
-    "lodash": "^4.17.21",
-    "mongoose": "~8.0.3",
+    "mongoose": "^8.0.3",
     "ramda": "^0.29.1"
   },
   "devDependencies": {
     "@types/base64-url": "^2.2.2",
-    "@types/lodash": "^4.14.202",
     "@types/node": "^20.10.6",
     "@types/ramda": "0.29.9",
     "ava": "^6.0.1",
