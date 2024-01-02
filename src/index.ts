@@ -170,3 +170,4 @@ export function paginatePlugin(schema: Schema, pluginOptions?: IPluginOptions) {
   schema.statics.aggregatePaged = aggregatePaged;
 }
 
+export * from "./types";
