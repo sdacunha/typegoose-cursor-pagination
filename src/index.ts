@@ -6,7 +6,7 @@ import { IPaginateOptions, IPaginateResult, IPluginOptions } from "./types";
  * A mongoose plugin to perform paginated find() requests.
  * @param schema the schema for the plugin
  */
-function plugin(schema: Schema, pluginOptions?: IPluginOptions) {
+export function paginatePlugin(schema: Schema, pluginOptions?: IPluginOptions) {
   /**
    * Peform a paginated find() request
    * @param {IPaginateOptions} options the pagination options
@@ -170,5 +170,3 @@ function plugin(schema: Schema, pluginOptions?: IPluginOptions) {
   schema.statics.aggregatePaged = aggregatePaged;
 }
 
-
-export default plugin;
